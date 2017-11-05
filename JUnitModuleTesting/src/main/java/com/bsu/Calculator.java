@@ -1,168 +1,240 @@
 package com.bsu;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
 import java.util.ArrayDeque;
 import java.util.Deque;
+import java.util.Stack;
 import java.util.StringTokenizer;
 
-/**
- * Created by eugene on 10/23/17.
- */
-public class Calculator {
-    public static void main(String[] args) throws Exception {
-        BufferedReader d = new BufferedReader(new InputStreamReader(System.in));
-        String sIn;
+class Calculator {
+    private Stack<Character> operatorsStack;
+    private StringBuilder output;
+    Stack<Double> operandsStack;
 
-        try {
-            System.out.println("Введте выражение для расчета. Поддерживаются цифры, операции +,-,*,/,^,% и приоритеты в виде скобок ( и ):");
-            sIn = d.readLine();
-            sIn = opn(sIn);
-            System.out.println(calculate(sIn));
-        } catch (Exception e) {
-            System.out.println(e.getMessage());
+    Calculator() {
+        operatorsStack = new Stack<>();
+        output = new StringBuilder();
+        operandsStack = new Stack<>();
+    }
+
+    private String transformToReversePolishNotation(String input) throws Exception {
+        output.setLength(0);
+        int inputLength = input.length();
+        for (int j = 0; j < inputLength; j++) {
+            char ch = input.charAt(j);
+            if (ch == ' ') {
+                continue;
+            }
+            switch (ch) {
+                case '+':
+                case '-':
+                    output.append(" ");
+                    gotOperator(ch, operatorPriority(ch));
+
+                    break;
+                case '*':
+                case '/':
+                    output.append(" ");
+                    gotOperator(ch, operatorPriority(ch));
+
+                    break;
+                case '(':
+                    operatorsStack.push(ch);
+                    break;
+                case ')':
+                    gotParensis();
+                    break;
+                case '.':
+                    if (isNotIntegerNumber(input, j)) {
+                        output.append(ch);
+                    }
+                    break;
+                default:
+                    try {
+                        if (isNumber(ch)) {
+                            output.append(ch);
+                        } else {
+                            throw new IllegalAccessException("недопустимый символ");
+
+                        }
+                        break;
+                    } catch (IllegalAccessException e) {
+                        System.err.println(e.getMessage());
+                    }
+            }
+
+        }
+        while (!operatorsStack.isEmpty()) {
+            output.append(" ");
+            output.append(operatorsStack.pop());
+
+        }
+
+        return output.toString();
+    }
+
+    private boolean isNotIntegerNumber(String input, int j) throws IndexOutOfBoundsException {
+
+        if (isNumber(input.charAt(j - 1)) && isNumber(input.charAt(j + 1))) {
+            return true;
+        } else {
+            throw new IndexOutOfBoundsException("недопустимы символ");
+
         }
     }
 
-    /**
-     * Преобразовать строку в обратную польскую нотацию
-     *
-     * @param sIn Входная строка
-     * @return Выходная строка в обратной польской нотации
-     */
-    private static String opn(String sIn) throws Exception {
-        StringBuilder sbStack = new StringBuilder(""), sbOut = new StringBuilder("");
-        char cIn, cTmp;
-
-        for (int i = 0; i < sIn.length(); i++) {
-            cIn = sIn.charAt(i);
-            if (isOp(cIn)) {
-                while (sbStack.length() > 0) {
-                    cTmp = sbStack.substring(sbStack.length() - 1).charAt(0);
-                    if (isOp(cTmp) && (opPrior(cIn) <= opPrior(cTmp))) {
-                        sbOut.append(" ").append(cTmp).append(" ");
-                        sbStack.setLength(sbStack.length() - 1);
-                    } else {
-                        sbOut.append(" ");
-                        break;
-                    }
-                }
-                sbOut.append(" ");
-                sbStack.append(cIn);
-            } else if ('(' == cIn) {
-                sbStack.append(cIn);
-            } else if (')' == cIn) {
-                cTmp = sbStack.substring(sbStack.length() - 1).charAt(0);
-                while ('(' != cTmp) {
-                    if (sbStack.length() < 1) {
-                        throw new Exception("Ошибка разбора скобок. Проверьте правильность выражения.");
-                    }
-                    sbOut.append(" ").append(cTmp);
-                    sbStack.setLength(sbStack.length() - 1);
-                    cTmp = sbStack.substring(sbStack.length() - 1).charAt(0);
-                }
-                sbStack.setLength(sbStack.length() - 1);
+    private void gotOperator(char opThis, int prec1) {
+        while (!operatorsStack.isEmpty()) {
+            char opTop = operatorsStack.pop();
+            if (opTop == '(') {
+                operatorsStack.push(opTop);
+                break;
             } else {
-                // Если символ не оператор - добавляем в выходную последовательность
-                sbOut.append(cIn);
+                int prec2;
+                if (opTop == '+' || opTop == '-')
+                    prec2 = 1;
+                else
+                    prec2 = 2;
+                if (prec2 < prec1) {
+                    operatorsStack.push(opTop);
+                    break;
+                } else
+                    output.append(opTop);
+                output.append(" ");
             }
         }
-
-        // Если в стеке остались операторы, добавляем их в входную строку
-        while (sbStack.length() > 0) {
-            sbOut.append(" ").append(sbStack.substring(sbStack.length() - 1));
-            sbStack.setLength(sbStack.length() - 1);
-        }
-
-        return sbOut.toString();
+        operatorsStack.push(opThis);
     }
 
-    /**
-     * Функция проверяет, является ли текущий символ оператором
-     */
-    private static boolean isOp(char c) {
+    private void gotParensis() throws Exception {
+//        while (!operatorsStack.isEmpty()) {
+//            char chx = operatorsStack.pop();
+//            if (chx == '(') {
+//                break;
+//            } else {
+//                output.append(" ");
+//            }
+//            output.append(chx);
+//        }
+        char ch = operatorsStack.pop();
+        while ('(' != ch) {
+
+            if (operatorsStack.size() < 1) {
+                throw new Exception("Ошибка разбора скобок. Проверьте правильность выражения.");
+            }
+            output.append(" ");
+            output.append(ch);
+            ch = operatorsStack.pop();
+
+        }
+
+
+    }
+
+    private boolean isNumber(char ch) {
+        if ((ch >= '0' && ch <= '9')) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    private boolean isOperator(char c) {
         switch (c) {
             case '-':
             case '+':
             case '*':
             case '/':
-            case '^':
                 return true;
         }
         return false;
     }
 
-    /**
-     * Возвращает приоритет операции
-     *
-     * @param op char
-     * @return byte
-     */
-    private static byte opPrior(char op) {
+    private byte operatorPriority(char op) {
         switch (op) {
-            case '^':
-                return 3;
             case '*':
             case '/':
-            case '%':
                 return 2;
         }
-        return 1; // Тут остается + и -
+        return 1;
     }
 
-    /**
-     * Считает выражение, записанное в обратной польской нотации
-     */
-    private static double calculate(String sIn) throws Exception {
-        double dA = 0, dB = 0;
-        String sTmp;
-        Deque<Double> stack = new Deque<>();
-        StringTokenizer st = new StringTokenizer(sIn);
-        while (st.hasMoreTokens()) {
-            try {
-                sTmp = st.nextToken().trim();
-                if (1 == sTmp.length() && isOp(sTmp.charAt(0))) {
-                    if (stack.size() < 2) {
-                        throw new Exception("Неверное количество данных в стеке для операции " + sTmp);
+    public double calculateExpression(String inputString) {
+        try {
+            String RPNstring = transformToReversePolishNotation(inputString);
+            double num1 = 0, num2 = 0;
+            String tempStr = "";
+
+            StringTokenizer st = new StringTokenizer(RPNstring);
+            while (st.hasMoreTokens()) {
+
+                tempStr = st.nextToken();
+                if (1 == tempStr.length() && isOperator(tempStr.charAt(0))) {
+                    if (operandsStack.size() < 2) {
+                        throw new Exception("Неверное количество данных в стеке ");
                     }
-                    dB = stack.pop();
-                    dA = stack.pop();
-                    switch (sTmp.charAt(0)) {
+                    num2 = operandsStack.pop();
+                    num1 = operandsStack.pop();
+                    switch (tempStr.charAt(0)) {
                         case '+':
-                            dA += dB;
+                            addition(num1, num2);
                             break;
                         case '-':
-                            dA -= dB;
+                            substraction(num1, num2);
                             break;
                         case '/':
-                            dA /= dB;
+                            division(num1, num2);
                             break;
                         case '*':
-                            dA *= dB;
-                            break;
-                        case '%':
-                            dA %= dB;
-                            break;
-                        case '^':
-                            dA = Math.pow(dA, dB);
+                            multiplication(num1, num2);
                             break;
                         default:
-                            throw new Exception("Недопустимая операция " + sTmp);
+                            throw new Exception("Нарушена последовательность символов");
                     }
-                    stack.push(dA);
+
                 } else {
-                    dA = Double.parseDouble(sTmp);
-                    stack.push(dA);
+                    try {
+                        operandsStack.push(Double.parseDouble(tempStr));
+                    }
+                    catch(NumberFormatException e){
+                        System.err.println("недопустимый символ в данном выражении");
+                        return -1000000;
+                    }
                 }
-            } catch (Exception e) {
-                throw new Exception("Недопустимый символ в выражении");
+
             }
-        }
 
-        if (stack.size() > 1) {
-            throw new Exception("Количество операторов не соответствует количеству операндов");
+            if (operandsStack.size() > 1) {
+                throw new Exception("Количество операторов не соответствует количеству операндов");
+            }
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+            return -10000000;
         }
-
-        return stack.pop();
+        return operandsStack.pop();
     }
+
+    private void addition(double num1, double num2) {
+        operandsStack.push(num1 + num2);
+    }
+
+    private void substraction(double num1, double num2) {
+        operandsStack.push(num1 - num2);
+    }
+
+    private void multiplication(double num1, double num2) {
+        operandsStack.push(num1 * num2);
+    }
+
+    private void division(double num1, double num2) {
+        try {
+            if (num2 == 0) {
+                throw new DivisionByZeroException("деление на ноль");
+            }
+            operandsStack.push(num1 / num2);
+        } catch (DivisionByZeroException e) {
+            System.err.println(e.getMessage());
+        }
+    }
+
 }
+
