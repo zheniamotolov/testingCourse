@@ -1,14 +1,13 @@
 package com.bsu;
 
-import java.util.ArrayDeque;
-import java.util.Deque;
+import java.util.EmptyStackException;
 import java.util.Stack;
 import java.util.StringTokenizer;
 
 class Calculator {
     private Stack<Character> operatorsStack;
     private StringBuilder output;
-    Stack<Double> operandsStack;
+    private Stack<Double> operandsStack;
 
     Calculator() {
         operatorsStack = new Stack<>();
@@ -18,6 +17,7 @@ class Calculator {
 
     private String transformToReversePolishNotation(String input) throws Exception {
         output.setLength(0);
+        operatorsStack.clear();
         int inputLength = input.length();
         for (int j = 0; j < inputLength; j++) {
             char ch = input.charAt(j);
@@ -44,22 +44,22 @@ class Calculator {
                     gotParensis();
                     break;
                 case '.':
+
                     if (isNotIntegerNumber(input, j)) {
                         output.append(ch);
                     }
                     break;
                 default:
-                    try {
-                        if (isNumber(ch)) {
-                            output.append(ch);
-                        } else {
-                            throw new IllegalAccessException("недопустимый символ");
 
-                        }
-                        break;
-                    } catch (IllegalAccessException e) {
-                        System.err.println(e.getMessage());
+                    if (isNumber(ch)) {
+                        output.append(ch);
+                    } else {
+                        throw new IllegalArgumentException("недопустимый символ");
+
+
                     }
+                    break;
+
             }
 
         }
@@ -77,7 +77,7 @@ class Calculator {
         if (isNumber(input.charAt(j - 1)) && isNumber(input.charAt(j + 1))) {
             return true;
         } else {
-            throw new IndexOutOfBoundsException("недопустимы символ");
+            throw new IndexOutOfBoundsException("недопустимый символ");
 
         }
     }
@@ -105,21 +105,18 @@ class Calculator {
         operatorsStack.push(opThis);
     }
 
-    private void gotParensis() throws Exception {
-//        while (!operatorsStack.isEmpty()) {
-//            char chx = operatorsStack.pop();
-//            if (chx == '(') {
-//                break;
-//            } else {
-//                output.append(" ");
-//            }
-//            output.append(chx);
-//        }
+    private void gotParensis() throws  ParenthesisParseException,EmptyStackException {
+        if (operatorsStack.size() == 0) {
+            throw new ParenthesisParseException("Ошибка разбора скобок. Проверьте правильность выражения");
+
+        }
         char ch = operatorsStack.pop();
+
+
         while ('(' != ch) {
 
             if (operatorsStack.size() < 1) {
-                throw new Exception("Ошибка разбора скобок. Проверьте правильность выражения.");
+                throw new ParenthesisParseException("Ошибка разбора скобок. Проверьте правильность выражения.");
             }
             output.append(" ");
             output.append(ch);
@@ -159,14 +156,13 @@ class Calculator {
     }
 
     public double calculateExpression(String inputString) {
+        operandsStack.clear();
         try {
             String RPNstring = transformToReversePolishNotation(inputString);
             double num1 = 0, num2 = 0;
             String tempStr = "";
-
             StringTokenizer st = new StringTokenizer(RPNstring);
             while (st.hasMoreTokens()) {
-
                 tempStr = st.nextToken();
                 if (1 == tempStr.length() && isOperator(tempStr.charAt(0))) {
                     if (operandsStack.size() < 2) {
@@ -188,16 +184,15 @@ class Calculator {
                             multiplication(num1, num2);
                             break;
                         default:
-                            throw new Exception("Нарушена последовательность символов");
+                            throw new NumberFormatException("Нарушена последовательность символов");
                     }
-
                 } else {
+
                     try {
                         operandsStack.push(Double.parseDouble(tempStr));
-                    }
-                    catch(NumberFormatException e){
+                    } catch (NumberFormatException e) {
                         System.err.println("недопустимый символ в данном выражении");
-                        return -1000000;
+                        return -10000000;
                     }
                 }
 
@@ -206,8 +201,23 @@ class Calculator {
             if (operandsStack.size() > 1) {
                 throw new Exception("Количество операторов не соответствует количеству операндов");
             }
+        } catch (ParenthesisParseException e) {
+            System.err.println(e.getMessage());
+            return -10000000;
+        } catch (NumberFormatException e) {
+            System.err.println(e.getMessage());
+            return -10000000;
+        } catch (IndexOutOfBoundsException e) {
+            System.err.println(e.getMessage());
+            return -10000000;
+        } catch (IllegalArgumentException e) {
+            System.err.println(e.getMessage());
+            return -10000000;
+        } catch (DivisionByZeroException e) {
+            System.err.println(e.getMessage());
+            return -10000000;
         } catch (Exception e) {
-            System.out.println(e.getMessage());
+            System.err.println(e.getMessage());
             return -10000000;
         }
         return operandsStack.pop();
@@ -225,15 +235,13 @@ class Calculator {
         operandsStack.push(num1 * num2);
     }
 
-    private void division(double num1, double num2) {
-        try {
-            if (num2 == 0) {
-                throw new DivisionByZeroException("деление на ноль");
-            }
-            operandsStack.push(num1 / num2);
-        } catch (DivisionByZeroException e) {
-            System.err.println(e.getMessage());
+    private void division(double num1, double num2) throws DivisionByZeroException {
+
+        if (num2 == 0) {
+            throw new DivisionByZeroException("деление на ноль");
         }
+        operandsStack.push(num1 / num2);
+
     }
 
 }

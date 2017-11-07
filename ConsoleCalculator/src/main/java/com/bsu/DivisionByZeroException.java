@@ -1,8 +1,5 @@
 package com.bsu;
 
-/**
- * Created by eugene on 11/5/17.
- */
 public class DivisionByZeroException extends Exception{
     public DivisionByZeroException() {
     }

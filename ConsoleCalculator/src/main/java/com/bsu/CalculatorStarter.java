@@ -3,9 +3,11 @@ package com.bsu;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-
-/**
- * Created by eugene on 11/5/17.
+/*
+ калькулятор поддерживает:
+ скобки, нецелочисленные числа,операции сложения вычитания деления умножения,пробелы
+ калькулятор поддерживает:
+ явное приведение чилсла к положительному или отрицательному ввиду
  */
 public class CalculatorStarter {
     public static void main(String[] args) throws IOException {
@@ -17,12 +19,7 @@ public class CalculatorStarter {
             if (input.equals("")) {
                 break;
             }
-            try {
                 System.out.println(calculator.calculateExpression((input)));
-            }catch (Exception e){
-                System.err.println(e.getMessage());
-            }
-
         }
     }
 
