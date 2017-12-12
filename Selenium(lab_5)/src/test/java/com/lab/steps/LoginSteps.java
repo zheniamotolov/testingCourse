@@ -39,13 +39,20 @@ public class LoginSteps {
         PostLoginPage postLoginPage = new PostLoginPage(driver);
         return (postLoginPage.getLoggedInEmailAddress().equals(successfullySignInText));
     }
-    public boolean isErrorLoginMessage(String errorLoginMessage){
+
+    public boolean isErrorLoginMessage(String errorLoginMessage) {
         MainPage mainPage = new MainPage(driver);
         return (mainPage.getLoginErrorMessage().equals(errorLoginMessage));
     }
-    public boolean isSignOut(String signOut){
-       PostLoginPage postLoginPage = new PostLoginPage(driver);
+
+    public boolean isSignOut(String signOut) {
+        PostLoginPage postLoginPage = new PostLoginPage(driver);
         return (postLoginPage.getSignOutOption().equals(signOut));
+    }
+
+    public boolean isErrorPasswordMessage(String errorPasswordMessage) {
+        MainPage mainPage = new MainPage(driver);
+        return (mainPage.getPasswordErrorMessage().equals(errorPasswordMessage));
     }
 
 

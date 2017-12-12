@@ -3,6 +3,7 @@ package com.lab.steps;
 import com.lab.driver.DriverSingleton;
 import com.lab.pages.FligtsSearchResaultPage;
 import com.lab.pages.MainPage;
+import com.lab.pages.PostLoginPage;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.openqa.selenium.WebDriver;
@@ -33,5 +34,14 @@ public class SearchFlightsSteps {
         FligtsSearchResaultPage fligtsSearchResaultPage=new FligtsSearchResaultPage(driver);
 
         return (fligtsSearchResaultPage.getFlightsSearchText().equals(searchFlightsResualt));
+    }
+    public void wrongNumberOfPassengersInput(String fromCity, String toCity) {
+        MainPage mainPage = new MainPage(driver);
+        mainPage.openPage();
+        mainPage.wrongPassengersDataInputForm(fromCity, toCity);
+    }
+    public  boolean isErrorMessageAppears(String successfullyFlightsSearch){
+        MainPage mainPage = new MainPage(driver);
+        return (mainPage.getWrongAmpuntOfPeopleMessage().equals(successfullyFlightsSearch));
     }
 }

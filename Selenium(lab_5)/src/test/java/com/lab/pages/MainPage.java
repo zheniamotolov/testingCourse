@@ -21,8 +21,14 @@ public class MainPage extends AbstractPage {
 
     private final Logger logger = LogManager.getRootLogger();
     private final String BASE_URL = "https://www.easyjet.com/us";
+    @FindBy(className = "message-summary")
+    private WebElement wrongAmountOfPassengersMessage;
+    @FindBy(className = "quantity-button-remove")
+    private WebElement decrementAmountOfPeopleButton;
     @FindBy(className = "incorrectemail-errormessage")
     private WebElement loginErrorMessage;
+    @FindBy(className = "incorrectpassword-errormessage")
+    private WebElement passwordErrorMessage;
 
     @FindBy(id = "signin-username")
     private WebElement inputLogin;
@@ -43,7 +49,6 @@ public class MainPage extends AbstractPage {
     private WebElement oneWayButton;
     @FindBy(css = "input[name='destination']")
     private WebElement destination;
-    //  private WebElement departingButton=driver.findElements(By.className("button-reset")).get(1);
     @FindBy(className = "button-reset")
     private WebElement departingButton;
 
@@ -102,5 +107,15 @@ public class MainPage extends AbstractPage {
     public String getLoginErrorMessage() {
         return loginErrorMessage.getText();
     }
+    public String getPasswordErrorMessage() {
+        return passwordErrorMessage.getText();
+    }
+   public void wrongPassengersDataInputForm(String fromCity, String toCity) {
+        decrementAmountOfPeopleButton.click();
 
+    }
+    public String getWrongAmpuntOfPeopleMessage(){
+        logger.info(wrongAmountOfPassengersMessage.getText());
+        return wrongAmountOfPassengersMessage.getText();
+    }
 }
